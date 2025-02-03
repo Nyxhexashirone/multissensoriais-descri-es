@@ -51,13 +51,9 @@
         let selectedVoice = null;
 
         function populateVoices() {
-            // Filtrando apenas as vozes do tipo pt-BR e garantindo que selecionaremos uma voz em português brasileiro.
             voices = synth.getVoices().filter(voice => voice.lang === "pt-BR");
-        
             let voiceSelect = document.getElementById("voiceSelect");
             voiceSelect.innerHTML = "";
-        
-            // Adiciona as vozes ao select
             voices.forEach((voice, index) => {
                 let option = document.createElement("option");
                 option.textContent = voice.name;
@@ -65,12 +61,10 @@
                 voiceSelect.appendChild(option);
             });
         
-            // Caso não tenha uma voz selecionada, selecionamos a primeira voz pt-BR disponível.
             if (!selectedVoice && voices.length > 0) {
-                selectedVoice = voices[0];  // Selecionando a primeira voz pt-BR encontrada
+                selectedVoice = voices[2];  // Selecionando a voz
             }
         
-            // Definir a voz selecionada no select
             voiceSelect.value = voices.indexOf(selectedVoice);
         }
 
