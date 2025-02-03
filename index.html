@@ -61,7 +61,14 @@
                 option.value = index;
                 voiceSelect.appendChild(option);
             });
-            selectedVoice = voices[0]; // Defina a voz padrão para a primeira da lista
+
+            // Certifique-se de manter a voz selecionada
+            if (!selectedVoice && voices.length > 0) {
+                selectedVoice = voices[0]; // Define a voz padrão (primeira da lista) se ainda não houver seleção
+            }
+
+            // Marca a voz selecionada no seletor
+            voiceSelect.value = voices.indexOf(selectedVoice);
         }
 
         // Altera a velocidade de fala
