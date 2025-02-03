@@ -79,11 +79,14 @@
                 synth.cancel();
             }
             let utterance = new SpeechSynthesisUtterance(descriptions[currentIndex].title + ". " + descriptions[currentIndex].description);
-            utterance.voice = selectedVoice; // Usa a voz selecionada
-            utterance.rate = speed; // Usa a velocidade configurada
+            utterance.voice = selectedVoice;
+            utterance.rate = speed;
             utterance.onend = function() {
-                nextDescription();
+                setTimeout(function() {
+                    nextDescription();
+                }, 5000);
             };
+            
             synth.speak(utterance);
         }
 
