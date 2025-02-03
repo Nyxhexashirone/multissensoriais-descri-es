@@ -50,7 +50,6 @@
         let speed = 1.0;
         let selectedVoice = null;
 
-        // Preenche a lista de vozes disponíveis
         function populateVoices() {
             voices = synth.getVoices().filter(voice => voice.lang.includes("pt-BR"));
             let voiceSelect = document.getElementById("voiceSelect");
@@ -62,22 +61,18 @@
                 voiceSelect.appendChild(option);
             });
 
-            // Certifique-se de manter a voz selecionada
             if (!selectedVoice && voices.length > 0) {
-                selectedVoice = voices[0]; // Define a voz padrão (primeira da lista) se ainda não houver seleção
+                selectedVoice = voices[2];
             }
 
-            // Marca a voz selecionada no seletor
             voiceSelect.value = voices.indexOf(selectedVoice);
         }
 
-        // Altera a velocidade de fala
         function changeSpeed(delta) {
             speed = Math.max(0.1, Math.min(3.0, speed + delta));
             document.getElementById("speedValue").innerText = speed.toFixed(1);
         }
 
-        // Reproduz o áudio com a descrição atual
         function playAudio() {
             if (synth.speaking) {
                 synth.cancel();
@@ -86,45 +81,38 @@
             utterance.voice = selectedVoice; // Usa a voz selecionada
             utterance.rate = speed; // Usa a velocidade configurada
             utterance.onend = function() {
-                nextDescription(); // Avança para a próxima descrição quando terminar de falar
+                nextDescription();
             };
             synth.speak(utterance);
         }
 
-        // Para a reprodução do áudio
         function stopAudio() {
             synth.cancel();
         }
 
-        // Avança para a próxima descrição
         function nextDescription() {
-            currentIndex = (currentIndex + 1) % descriptions.length; // Ciclo infinito
+            currentIndex = (currentIndex + 1) % descriptions.length;
             updateDescription();
             playAudio();
         }
 
-        // Volta para a descrição anterior
         function previousDescription() {
-            currentIndex = (currentIndex - 1 + descriptions.length) % descriptions.length; // Evita índice negativo
+            currentIndex = (currentIndex - 1 + descriptions.length) % descriptions.length;
             updateDescription();
             playAudio();
         }
 
-        // Atualiza a descrição na interface
         function updateDescription() {
             document.getElementById("title").innerText = descriptions[currentIndex].title;
             document.getElementById("description").innerText = descriptions[currentIndex].description;
         }
 
-        // Atualiza a voz selecionada
         document.getElementById("voiceSelect").addEventListener("change", function() {
             selectedVoice = voices[this.value];
         });
 
-        // Quando as vozes estiverem disponíveis, preenche a lista
         window.speechSynthesis.onvoiceschanged = populateVoices;
 
-        // Atualiza a descrição inicial
         updateDescription();
     </script>
 
