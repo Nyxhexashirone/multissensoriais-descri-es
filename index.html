@@ -76,7 +76,7 @@
             utterance.voice = selectedVoice;
             utterance.rate = speed;
             utterance.onend = function() {
-                setTimeout(nextDescription, 5000); // Avança após 5 segundos
+                nextDescription(); // Avança para a próxima descrição quando terminar de falar
             };
             synth.speak(utterance);
         }
