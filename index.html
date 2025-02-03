@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Reprodutor de Áudio Multissensorial</title>
     <style>
         body {
@@ -75,6 +75,9 @@
             let utterance = new SpeechSynthesisUtterance(descriptions[currentIndex].title + ". " + descriptions[currentIndex].description);
             utterance.voice = selectedVoice;
             utterance.rate = speed;
+            utterance.onend = function() {
+                setTimeout(nextDescription, 5000); // Avança após 5 segundos
+            };
             synth.speak(utterance);
         }
 
@@ -83,19 +86,15 @@
         }
 
         function nextDescription() {
-            if (currentIndex < descriptions.length - 1) {
-                currentIndex++;
-                updateDescription();
-                playAudio();
-            }
+            currentIndex = (currentIndex + 1) % descriptions.length; // Ciclo infinito
+            updateDescription();
+            playAudio();
         }
 
         function previousDescription() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateDescription();
-                playAudio();
-            }
+            currentIndex = (currentIndex - 1 + descriptions.length) % descriptions.length; // Evita índice negativo
+            updateDescription();
+            playAudio();
         }
 
         function updateDescription() {
