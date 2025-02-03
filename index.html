@@ -265,9 +265,12 @@
                 option.value = index;
                 voiceSelect.appendChild(option);
             });
-            if (!selectedVoice && voices.length > 0) {
-                selectedVoice = voices[2];
+            
+            if (voices.length > 0) {
+                let isMobile = /Mobi|Android/i.test(navigator.userAgent);
+                selectedVoice = isMobile ? voices[0] : voices[2];
             }
+            
             voiceSelect.value = voices.indexOf(selectedVoice);
         }
 
@@ -339,7 +342,6 @@
         });
 
         window.speechSynthesis.onvoiceschanged = populateVoices;
-
         updateDescription();
     </script>
 
