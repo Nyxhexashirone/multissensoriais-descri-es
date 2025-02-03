@@ -15,6 +15,10 @@
             padding: 10px;
             font-size: 16px;
         }
+        #timer {
+            font-size: 20px;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -37,6 +41,7 @@
 
     <h2 id="title"></h2>
     <p id="description"></p>
+    <div id="timer">00:00:00</div>
 
     <script>
         let synth = window.speechSynthesis;
@@ -246,6 +251,8 @@
         let currentIndex = 0;
         let speed = 1.0;
         let selectedVoice = null;
+        let timerInterval;
+        let elapsedTime = 0;
 
         function populateVoices() {
             voices = synth.getVoices().filter(voice => voice.lang === "pt-BR");
@@ -257,14 +264,7 @@
                 option.value = index;
                 voiceSelect.appendChild(option);
             });
-        
-            if (!selectedVoice && voices.length > 0) {
-                selectedVoice = voices[2];  // Selecionando a voz
-            }
-        
-            voiceSelect.value = voices.indexOf(selectedVoice);
         }
-
 
         function changeSpeed(delta) {
             speed = Math.max(0.1, Math.min(3.0, speed + delta));
@@ -275,20 +275,18 @@
             if (synth.speaking) {
                 synth.cancel();
             }
+
             let utterance = new SpeechSynthesisUtterance(descriptions[currentIndex].title + ". " + descriptions[currentIndex].description);
             utterance.voice = selectedVoice;
             utterance.rate = speed;
-            utterance.onend = function() {
-                setTimeout(function() {
-                    nextDescription();
-                }, 5000);
-            };
             
+            startTimer();
             synth.speak(utterance);
         }
 
         function stopAudio() {
             synth.cancel();
+            stopTimer();
         }
 
         function nextDescription() {
@@ -308,13 +306,28 @@
             document.getElementById("description").innerText = descriptions[currentIndex].description;
         }
 
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                elapsedTime++;
+                let hours = String(Math.floor(elapsedTime / 3600)).padStart(2, '0');
+                let minutes = String(Math.floor((elapsedTime % 3600) / 60)).padStart(2, '0');
+                let seconds = String(elapsedTime % 60).padStart(2, '0');
+                document.getElementById("timer").innerText = `${hours}:${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            elapsedTime = 0;
+            document.getElementById("timer").innerText = "00:00:00";
+        }
+
         document.getElementById("voiceSelect").addEventListener("change", function() {
             selectedVoice = voices[this.value];
         });
 
         window.speechSynthesis.onvoiceschanged = populateVoices;
-
-        updateDescription();
     </script>
 
 </body>
