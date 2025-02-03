@@ -2,110 +2,114 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Reprodutor Sensorial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reprodutor de Áudio Multissensorial</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+            text-align: center;
+            margin: 50px;
         }
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 20px 0;
-        }
-        button {
+        select, button {
+            margin: 10px;
             padding: 10px;
-            cursor: pointer;
-        }
-        .descricao {
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <button onclick="selecionarVoz()">Vozes</button>
-        <input type="range" id="velocidade" min="0.1" max="3" step="0.1" value="1" onchange="atualizarVelocidade()">
-        <button onclick="play()">Reproduzir</button>
-        <button onclick="stop()">Parar</button>
-        <button onclick="anterior()">Voltar</button>
-        <button onclick="proxima()">Avançar</button>
-    </div>
 
-    <div class="descricao">
-        <h2 id="titulo"></h2>
-        <p id="texto"></p>
-    </div>
+    <h1>Reprodutor de Áudio Multissensorial</h1>
+    
+    <label for="voiceSelect">Voz:</label>
+    <select id="voiceSelect"></select>
+
+    <label for="speedControl">Velocidade:</label>
+    <button onclick="changeSpeed(-0.1)">-</button>
+    <span id="speedValue">1.0</span>
+    <button onclick="changeSpeed(0.1)">+</button>
+
+    <br><br>
+    <button onclick="playAudio()">Reproduzir</button>
+    <button onclick="stopAudio()">Parar</button>
+    <button onclick="previousDescription()">Voltar</button>
+    <button onclick="nextDescription()">Avançar</button>
+
+    <h2 id="title"></h2>
+    <p id="description"></p>
 
     <script>
-        const descricoes = [
-            {
-                titulo: "Praia ao Amanhecer",
-                texto: "Imagine a areia macia e úmida sob seus pés. O cheiro de maresia misturado com o aroma fresco da manhã. O som rítmico das ondas quebrando suavemente na costa. O céu em tons de laranja e rosa, com o calor do sol nascendo aquecendo levemente sua pele."
-            },
-            {
-                titulo: "Floresta Tropical",
-                texto: "Sinta a umidade do ar denso e fresco. Ouça o canto dos pássaros exóticos e o farfalhar das folhas nas copas das árvores. Veja os raios de sol filtrando pela vegetação densa, iluminando os tons de verde em diferentes intensidades. O cheiro de terra molhada e vegetação em decomposição."
-            }
+        let synth = window.speechSynthesis;
+        let voices = [];
+        let descriptions = [
+            { title: "Informação Analógica vs Sensorial", description: "A informação analógica são dados sobre uma experiência, como 'a bola era vermelha'. A informação sensorial é a representação dos sentidos, como a imagem da bola ou o som ao quicá-la." },
+            { title: "Como Ativar o Pensamento Sensorial", description: "Para acessar a informação sensorial, tente lembrar como um som específico se parece ou como certas texturas são sentidas na pele." },
+            { title: "Exercícios para Desenvolver a Visualização", description: "Olhe para um objeto por um segundo e tente lembrar sua forma e cor sem olhar novamente. Com o tempo, isso fortalece a memória visual." }
         ];
+        let currentIndex = 0;
+        let speed = 1.0;
+        let selectedVoice = null;
 
-        let vozSelecionada = null;
-        let indiceAtual = 0;
-        let velocidade = 1;
-        let sintetizador = window.speechSynthesis;
-        let utterance = null;
-
-        function carregarDescricao() {
-            document.getElementById('titulo').textContent = descricoes[indiceAtual].titulo;
-            document.getElementById('texto').textContent = descricoes[indiceAtual].texto;
+        function populateVoices() {
+            voices = synth.getVoices().filter(voice => voice.lang.includes("pt-BR"));
+            let voiceSelect = document.getElementById("voiceSelect");
+            voiceSelect.innerHTML = "";
+            voices.forEach((voice, index) => {
+                let option = document.createElement("option");
+                option.textContent = voice.name;
+                option.value = index;
+                voiceSelect.appendChild(option);
+            });
+            selectedVoice = voices[0];
         }
 
-        function selecionarVoz() {
-            const vozes = sintetizador.getVoices().filter(voz => voz.lang === 'pt-BR');
-            vozSelecionada = vozes.length > 0 ? vozes[0] : null;
+        function changeSpeed(delta) {
+            speed = Math.max(0.1, Math.min(3.0, speed + delta));
+            document.getElementById("speedValue").innerText = speed.toFixed(1);
         }
 
-        function atualizarVelocidade() {
-            velocidade = document.getElementById('velocidade').value;
+        function playAudio() {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            let utterance = new SpeechSynthesisUtterance(descriptions[currentIndex].title + ". " + descriptions[currentIndex].description);
+            utterance.voice = selectedVoice;
+            utterance.rate = speed;
+            synth.speak(utterance);
         }
 
-        function play() {
-            if (vozSelecionada) {
-                stop();
-                utterance = new SpeechSynthesisUtterance(descricoes[indiceAtual].texto);
-                utterance.voice = vozSelecionada;
-                utterance.rate = velocidade;
-                sintetizador.speak(utterance);
+        function stopAudio() {
+            synth.cancel();
+        }
+
+        function nextDescription() {
+            if (currentIndex < descriptions.length - 1) {
+                currentIndex++;
+                updateDescription();
+                playAudio();
             }
         }
 
-        function stop() {
-            sintetizador.cancel();
+        function previousDescription() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateDescription();
+                playAudio();
+            }
         }
 
-        function proxima() {
-            indiceAtual = (indiceAtual + 1) % descricoes.length;
-            carregarDescricao();
-            if (sintetizador.speaking) play();
+        function updateDescription() {
+            document.getElementById("title").innerText = descriptions[currentIndex].title;
+            document.getElementById("description").innerText = descriptions[currentIndex].description;
         }
 
-        function anterior() {
-            indiceAtual = (indiceAtual - 1 + descricoes.length) % descricoes.length;
-            carregarDescricao();
-            if (sintetizador.speaking) play();
-        }
+        document.getElementById("voiceSelect").addEventListener("change", function() {
+            selectedVoice = voices[this.value];
+        });
 
-        // Inicialização
-        window.speechSynthesis.onvoiceschanged = () => {
-            selecionarVoz();
-            carregarDescricao();
-        };
+        window.speechSynthesis.onvoiceschanged = populateVoices;
+        updateDescription();
     </script>
+
 </body>
 </html>
