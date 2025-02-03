@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Reprodutor Multissensorial</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .controls {
+            margin: 20px 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+        select {
+            padding: 8px;
+            width: 100%;
+        }
+        .descricao {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Reprodutor Multissensorial</h1>
+    
+    <div class="controls">
+        <select id="vozes">
+            <option value="">Carregando vozes...</option>
+        </select>
+        
+        <select id="velocidade">
+            <option value="0.8">Velocidade 0.8x</option>
+            <option value="1" selected>Velocidade Normal</option>
+            <option value="1.4">Velocidade 1.4x</option>
+        </select>
+    </div>
+
+    <div class="controls">
+        <button onclick="voltar()">⏮ Voltar</button>
+        <button onclick="togglePlay()">▶ Reproduzir</button>
+        <button onclick="avancar()">⏭ Avançar</button>
+    </div>
+
+    <div class="descricao">
+        <h2 id="titulo-atual"></h2>
+        <p id="texto-atual"></p>
+    </div>
+
+    <script>
+        const descricoes = [
+            {
+                titulo: "Praia ao Amanhecer",
+                texto: "Imagine a areia úmida e fria sob seus pés... O cheiro de maresia no ar... O som rítmico das ondas quebrando... O céu em tons de laranja e rosa suave."
+            },
+            {
+                titulo: "Floresta Tropical",
+                texto: "O ar denso e úmido... O canto dos pássaros ecoando... Folhas verdes brilhantes com gotas de orvalho... O cheiro de terra molhada e vegetação fresca."
+            },
+            {
+                titulo: "Café da Manhã",
+                texto: "O aroma do café recém-passado... O crocante do pão torrado... O doce da geleia derretendo... O calor da xícara entre as mãos."
+            }
+        ];
+
+        let vozSelecionada = null;
+        let indiceAtual = 0;
+        let sintetizador = window.speechSynthesis;
+        let utterance = null;
+
+        // Carregar vozes
+        function carregarVozes() {
+            const vozes = sintetizador.getVoices();
+            const selectVozes = document.getElementById('vozes');
+            selectVozes.innerHTML = '<option value="">Selecione uma voz</option>';
+            
+            vozes.forEach(voz => {
+                if (voz.lang === 'pt-BR') {
+                    const option = document.createElement('option');
+                    option.value = voz.name;
+                    option.textContent = voz.name;
+                    selectVozes.appendChild(option);
+                }
+            });
+        }
+
+        // Configurar voz selecionada
+        document.getElementById('vozes').addEventListener('change', (e) => {
+            vozSelecionada = sintetizador.getVoices().find(voz => voz.name === e.target.value);
+        });
+
+        // Controles de reprodução
+        function togglePlay() {
+            if (sintetizador.speaking) {
+                sintetizador.cancel();
+                document.querySelector('button[onclick="togglePlay()"]').textContent = '▶ Reproduzir';
+            } else {
+                falarDescricao();
+                document.querySelector('button[onclick="togglePlay()"]').textContent = '⏸ Pausar';
+            }
+        }
+
+        function falarDescricao() {
+            if (!vozSelecionada) return alert('Selecione uma voz primeiro!');
+            
+            const descricao = descricoes[indiceAtual];
+            document.getElementById('titulo-atual').textContent = descricao.titulo;
+            document.getElementById('texto-atual').textContent = descricao.texto;
+
+            utterance = new SpeechSynthesisUtterance(`${descricao.titulo}. ${descricao.texto}`);
+            utterance.voice = vozSelecionada;
+            utterance.rate = document.getElementById('velocidade').value;
+            
+            sintetizador.speak(utterance);
+        }
+
+        function avancar() {
+            indiceAtual = (indiceAtual + 1) % descricoes.length;
+            sintetizador.cancel();
+            falarDescricao();
+        }
+
+        function voltar() {
+            indiceAtual = (indiceAtual - 1 + descricoes.length) % descricoes.length;
+            sintetizador.cancel();
+            falarDescricao();
+        }
+
+        // Inicialização
+        window.speechSynthesis.onvoiceschanged = carregarVozes;
+        carregarVozes();
+    </script>
+</body>
+</html>
